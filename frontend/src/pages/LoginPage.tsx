@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { listarUsuarios } from '../api/auth'
+import Icon from '../components/Icon'
+import EditorNombre from '../components/EditorNombre'
+import SelectorTema from '../components/SelectorTema'
 import { useAuthStore } from '../store/authStore'
-import { useNegocioStore } from '../store/negocioStore'
+import { inicialDelNombre, useNegocioStore } from '../store/negocioStore'
 
 export default function LoginPage() {
   const negocio = useNegocioStore((s) => s.negocio)
+  const configurado = useNegocioStore((s) => s.configurado)
   const navigate = useNavigate()
   const login = useAuthStore((s) => s.login)
   const error = useAuthStore((s) => s.error)
@@ -37,25 +41,47 @@ export default function LoginPage() {
     }
   }
 
-  return (
-    <div className="flex h-screen items-center justify-center">
-      <form
-        onSubmit={handleSubmit}
-        className="neon-panel w-80 rounded-2xl p-6"
-      >
-        <h1 className="neon-title mb-1 text-center text-2xl font-extrabold tracking-wide">
-          {negocio.nombre}
-        </h1>
-        <p className="mb-6 min-h-4 text-center text-xs tracking-[0.3em] text-[var(--pos-text-dim)] uppercase">{negocio.subtitulo}</p>
+  // Instalacion nueva: antes del ingreso se le pone nombre al sistema
+  if (!configurado) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(ellipse_at_top,var(--pos-glow),transparent_60%)] p-4">
+        <div className="absolute top-3 right-3">
+          <SelectorTema />
+        </div>
+        <div className="panel w-full max-w-lg rounded-2xl p-6 shadow-xl">
+          <EditorNombre
+            titulo="¡Bienvenido! ¿Cómo se llama tu negocio?"
+            descripcion="Este nombre aparece arriba de la pantalla y en los tickets. Podés decorarlo con emojis o signos."
+            textoBoton="Empezar"
+            onListo={() => {}}
+          />
+        </div>
+      </div>
+    )
+  }
 
-        <label className="mb-1 block text-sm text-[var(--pos-text-dim)]" htmlFor="usuario">
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(ellipse_at_top,var(--pos-glow),transparent_60%)] p-4">
+      <div className="absolute top-3 right-3">
+        <SelectorTema />
+      </div>
+      <form onSubmit={handleSubmit} className="panel w-full max-w-sm rounded-2xl p-7 shadow-xl">
+        <div className="mb-6 flex flex-col items-center gap-3 text-center">
+          <span className="brand-mark !h-14 !w-14 !rounded-2xl !text-2xl">{inicialDelNombre(negocio.nombre)}</span>
+          <div>
+            <h1 className="text-[length:calc(var(--pos-brand-size)*1.15)] font-bold">{negocio.nombre}</h1>
+            {negocio.subtitulo && <p className="text-sm text-[var(--pos-text-dim)]">{negocio.subtitulo}</p>}
+          </div>
+        </div>
+
+        <label className="section-label mb-1.5 block" htmlFor="usuario">
           Usuario
         </label>
         <select
           id="usuario"
           value={usuario}
           onChange={(e) => setUsuario(e.target.value)}
-          className="mb-4 w-full rounded border border-[var(--pos-border)] bg-black px-3 py-2 text-[var(--pos-text)]"
+          className="mb-4 w-full rounded-lg border border-[var(--pos-border)] bg-[var(--pos-input)] px-3 py-2.5"
         >
           {usuarios.map((u) => (
             <option key={u} value={u}>
@@ -64,35 +90,32 @@ export default function LoginPage() {
           ))}
         </select>
 
-        <label className="mb-1 block text-sm text-[var(--pos-text-dim)]" htmlFor="password">
-          Contrasena
+        <label className="section-label mb-1.5 block" htmlFor="password">
+          Contraseña
         </label>
-        <div className="mb-4 flex items-center rounded border border-[var(--pos-border)] bg-black">
+        <div className="relative mb-4">
           <input
             id="password"
             type={mostrarPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-transparent px-3 py-2 text-[var(--pos-text)] outline-none"
+            className="w-full rounded-lg border border-[var(--pos-border)] bg-[var(--pos-input)] py-2.5 pr-11 pl-3"
             autoFocus
           />
           <button
             type="button"
             onClick={() => setMostrarPassword((v) => !v)}
-            className="px-3 text-[var(--pos-text-dim)]"
+            className="btn-icon absolute top-1/2 right-1 !h-8 !w-8 -translate-y-1/2"
             tabIndex={-1}
+            title={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           >
-            {mostrarPassword ? '🚫' : '👁'}
+            <Icon name={mostrarPassword ? 'eyeOff' : 'eye'} size={17} />
           </button>
         </div>
 
-        {error && <p className="mb-4 text-sm text-[var(--pos-red)]">{error}</p>}
+        {error && <p className="mb-4 rounded-lg bg-[var(--pos-red-soft)] px-3 py-2 text-sm text-[var(--pos-red)]">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={enviando}
-          className="neon-btn-primary w-full rounded-lg py-2 font-semibold text-white disabled:opacity-50"
-        >
+        <button type="submit" disabled={enviando} className="btn-primary w-full rounded-xl py-2.5 font-semibold">
           {enviando ? 'Ingresando...' : 'Ingresar'}
         </button>
       </form>

@@ -45,15 +45,15 @@ export default function AnulacionFacturasModal({ onCerrar }: { onCerrar: () => v
   const money = (n: number) => `$ ${n.toLocaleString('es-AR')}`
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/90">
+    <div className="fixed inset-0 z-40 flex items-center justify-center pos-overlay">
       <div className="max-h-[85vh] w-[700px] overflow-auto rounded-lg border border-[var(--pos-border)] bg-[var(--pos-panel)] p-4 text-[var(--pos-text)]">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[var(--pos-violet)]">{verAnuladas ? 'Facturas Anuladas' : 'Listado de Facturas'}</h2>
+          <h2 className="text-lg font-bold text-[var(--pos-primary)]">{verAnuladas ? 'Facturas Anuladas' : 'Listado de Facturas'}</h2>
           <div className="flex gap-2">
             <button onClick={toggleAnuladas} className="rounded border border-[var(--pos-border)] px-3 py-1 text-sm">
               {verAnuladas ? 'Ver activas' : '📜 Ver Anuladas'}
             </button>
-            <button onClick={onCerrar} className="text-[var(--pos-text-dim)] hover:text-white">✕</button>
+            <button onClick={onCerrar} className="text-[var(--pos-text-dim)] hover:text-[var(--pos-text)]">✕</button>
           </div>
         </div>
 
@@ -63,7 +63,7 @@ export default function AnulacionFacturasModal({ onCerrar }: { onCerrar: () => v
             if (f) seleccionar(f)
           }}
           value={seleccionada?.id ?? ''}
-          className="mb-3 w-full rounded border border-[var(--pos-border)] bg-black px-2 py-1 text-sm"
+          className="mb-3 w-full rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1 text-sm"
         >
           <option value="">Seleccionar factura...</option>
           {lista.map((f) => (

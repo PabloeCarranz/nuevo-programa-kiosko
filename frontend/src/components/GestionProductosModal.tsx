@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { actualizarProducto, bajaProducto, crearProducto, listarCatalogo } from '../api/catalogo'
 import type { Producto } from '../api/productos'
-
-const RUBROS = ['golosinas', 'bebidas', 'cigarros', 'mesa_pool'] as const
+import { useNegocioStore } from '../store/negocioStore'
 
 export default function GestionProductosModal({ onCerrar }: { onCerrar: () => void }) {
-  const [rubro, setRubro] = useState<(typeof RUBROS)[number]>('golosinas')
+  const rubros = useNegocioStore((s) => s.rubros)
+  const [rubro, setRubro] = useState<string>(() => rubros[0]?.clave ?? 'golosinas')
   const [productos, setProductos] = useState<Producto[]>([])
   const [editando, setEditando] = useState<Producto | null>(null)
 
@@ -58,43 +58,46 @@ export default function GestionProductosModal({ onCerrar }: { onCerrar: () => vo
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/90">
+    <div className="fixed inset-0 z-40 flex items-center justify-center pos-overlay">
       <div className="max-h-[85vh] w-[640px] overflow-auto rounded-lg border border-[var(--pos-border)] bg-[var(--pos-panel)] p-4 text-[var(--pos-text)]">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[var(--pos-violet)]">Gestion de Productos</h2>
-          <button onClick={onCerrar} className="text-[var(--pos-text-dim)] hover:text-white">✕</button>
+          <h2 className="text-lg font-bold text-[var(--pos-primary)]">Gestion de Productos</h2>
+          <button onClick={onCerrar} className="text-[var(--pos-text-dim)] hover:text-[var(--pos-text)]">✕</button>
         </div>
 
         <label className="mb-2 block text-sm text-[var(--pos-text-dim)]">Rubro</label>
         <select
           value={rubro}
           onChange={(e) => {
-            setRubro(e.target.value as typeof rubro)
+            setRubro(e.target.value)
             limpiarFormulario()
           }}
-          className="mb-3 w-full rounded border border-[var(--pos-border)] bg-black px-2 py-1 text-sm"
+          className="mb-3 w-full rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1 text-sm"
         >
-          {RUBROS.map((r) => (
-            <option key={r} value={r}>{r}</option>
+          {rubros.map((r) => (
+            <option key={r.clave} value={r.clave}>
+              {r.emoji} {r.nombre}
+              {r.activo ? '' : ' (oculto)'}
+            </option>
           ))}
         </select>
 
         <div className="mb-3 grid grid-cols-2 gap-2 rounded border border-[var(--pos-border)] p-2 text-sm">
-          <input placeholder="Nombre (max 20)" value={nombre} onChange={(e) => setNombre(e.target.value.slice(0, 20))} className="rounded border border-[var(--pos-border)] bg-black px-2 py-1" />
+          <input placeholder="Nombre (max 20)" value={nombre} onChange={(e) => setNombre(e.target.value.slice(0, 20))} className="rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1" />
           <input
             placeholder="Cantidad inicial"
             value={cantidad}
             onChange={(e) => setCantidad(e.target.value.replace(/\D/g, ''))}
             disabled={!!editando}
-            className="rounded border border-[var(--pos-border)] bg-black px-2 py-1 disabled:opacity-40"
+            className="rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1 disabled:opacity-40"
           />
-          <input placeholder="Precio" value={precio} onChange={(e) => setPrecio(e.target.value.replace(/[^0-9.]/g, ''))} className="rounded border border-[var(--pos-border)] bg-black px-2 py-1" />
-          <input placeholder="Codigo de barras" value={barras} onChange={(e) => setBarras(e.target.value.replace(/\D/g, ''))} className="rounded border border-[var(--pos-border)] bg-black px-2 py-1" />
+          <input placeholder="Precio" value={precio} onChange={(e) => setPrecio(e.target.value.replace(/[^0-9.]/g, ''))} className="rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1" />
+          <input placeholder="Codigo de barras" value={barras} onChange={(e) => setBarras(e.target.value.replace(/\D/g, ''))} className="rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1" />
           <div className="col-span-2 flex justify-end gap-2">
             {editando && (
               <button onClick={limpiarFormulario} className="rounded border border-[var(--pos-border)] px-3 py-1">Cancelar edicion</button>
             )}
-            <button onClick={handleGuardar} className="rounded bg-[var(--pos-violet)] px-4 py-1 font-semibold text-white">
+            <button onClick={handleGuardar} className="rounded bg-[var(--pos-primary)] px-4 py-1 font-semibold text-white">
               {editando ? 'Guardar cambios' : 'Agregar'}
             </button>
           </div>
@@ -113,7 +116,7 @@ export default function GestionProductosModal({ onCerrar }: { onCerrar: () => vo
                 <td>{p.nombre}</td>
                 <td>{p.precio}</td>
                 <td className="text-right">
-                  <button onClick={() => seleccionarParaEditar(p)} className="mr-2 text-[var(--pos-violet)] hover:underline">Editar</button>
+                  <button onClick={() => seleccionarParaEditar(p)} className="mr-2 text-[var(--pos-primary)] hover:underline">Editar</button>
                   <button onClick={() => handleBaja(p)} className="text-[var(--pos-red)] hover:underline">Baja</button>
                 </td>
               </tr>

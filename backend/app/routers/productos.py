@@ -59,7 +59,10 @@ def crear(
     _: CurrentUser = Depends(require_master),
 ):
     tabla = _tabla_o_404(rubro)
-    codigo = productos_service.crear_producto(conn, tabla, body.nombre, body.cantidad, body.precio, body.barras_codigo)
+    try:
+        codigo = productos_service.crear_producto(conn, tabla, body.nombre, body.cantidad, body.precio, body.barras_codigo)
+    except ValueError as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
     return {"codigo": codigo}
 
 

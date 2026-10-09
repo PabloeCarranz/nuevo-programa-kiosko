@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.db import db_session
-from app.services import negocio_service
+from app.services import negocio_service, rubros_service
 from app.routers import (
     auth,
     balance,
@@ -20,6 +20,7 @@ from app.routers import (
     negocio,
     pool,
     productos,
+    rubros,
 )
 
 app = FastAPI(title="Caja Neon API")
@@ -47,6 +48,7 @@ app.include_router(facturas.router, prefix="/api")
 app.include_router(control_stock.router, prefix="/api")
 app.include_router(balance.router, prefix="/api")
 app.include_router(negocio.router, prefix="/api")
+app.include_router(rubros.router, prefix="/api")
 
 
 @app.on_event("startup")
@@ -54,3 +56,5 @@ def preparar_base() -> None:
     # Bases creadas antes de la version en blanco no tienen la tabla NEGOCIO.
     with db_session() as conn:
         negocio_service.asegurar_tabla(conn)
+        # Registra los 4 rubros de siempre la primera vez y carga los rangos en memoria
+        rubros_service.asegurar_tabla(conn)

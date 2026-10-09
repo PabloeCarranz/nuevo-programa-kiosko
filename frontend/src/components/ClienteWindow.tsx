@@ -11,6 +11,7 @@ import type { SesionPool } from '../api/pool'
 import type { Cliente } from '../api/clientes'
 import type { FilaCarrito, MedioPago } from '../store/ventaStore'
 import { ApiError } from '../api/client'
+import Icon from './Icon'
 
 const MEDIOS_PAGO: MedioPago[] = ['Efectivo', 'Transferencia', 'Cuenta', 'Multipago']
 
@@ -188,18 +189,26 @@ export default function ClienteWindow({
 
   const total = items.reduce((acc, i) => acc + i.cantidad * i.precio, 0)
 
+  const money = (n: number) => `$ ${n.toLocaleString('es-AR', { maximumFractionDigits: 2 })}`
+  const tiempoCorriendo = sesion?.estado === 'ABIERTA'
+
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/90">
-      <div className="w-[640px] rounded-lg border border-[var(--pos-border)] bg-[var(--pos-panel)] p-4 text-[var(--pos-text)]">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[var(--pos-violet)]">Pedido de: {cliente.nombre}</h2>
-          <button onClick={cerrarVentana} className="text-[var(--pos-text-dim)] hover:text-white">
-            ✕
+    <div className="pos-overlay fixed inset-0 z-40 flex items-center justify-center p-4">
+      <div className="relative flex max-h-full w-full max-w-[720px] flex-col overflow-hidden rounded-2xl border border-[var(--pos-border)] bg-[var(--pos-panel)] text-[var(--pos-text)]">
+        <header className="flex items-center justify-between gap-3 border-b border-[var(--pos-border)] px-5 py-4">
+          <div className="min-w-0">
+            <p className="section-label">Cuenta</p>
+            <h2 className="truncate text-[length:var(--pos-brand-size)] font-bold">{cliente.nombre}</h2>
+          </div>
+          <button onClick={cerrarVentana} className="btn-icon" title="Cerrar">
+            <Icon name="x" />
           </button>
-        </div>
+        </header>
 
         {bloqueado ? (
-          <p className="text-[var(--pos-red)]">No se pudo abrir esta ventana (ya hay otra ventana de cliente abierta).</p>
+          <p className="m-5 rounded-lg bg-[var(--pos-red-soft)] px-3 py-2 text-sm text-[var(--pos-red)]">
+            No se pudo abrir esta cuenta: ya hay otra ventana de cliente abierta.
+          </p>
         ) : (
           <>
             <input
@@ -224,114 +233,186 @@ export default function ClienteWindow({
               aria-hidden
             />
 
-            <table className="mb-3 w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--pos-border)] text-left text-[var(--pos-text-dim)]">
-                  <th className="py-1">Codigo</th>
-                  <th>Nombre</th>
-                  <th>Cant.</th>
-                  <th>Precio</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item, i) => (
-                  <tr key={i} onContextMenu={(e) => { e.preventDefault(); quitarItem(i) }} className="border-b border-[var(--pos-border)]/40" title="Click derecho para quitar">
-                    <td className="py-1">{item.codigo}</td>
-                    <td>{item.nombre}</td>
-                    <td>{item.cantidad}</td>
-                    <td>{item.precio}</td>
-                    <td>{item.cantidad * item.precio}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <div className="mb-3 flex items-end gap-2 text-sm">
-              <div>
-                <label className="block text-[var(--pos-text-dim)]">Codigo (5 digitos)</label>
-                <input
-                  value={codigoManual}
-                  onChange={(e) => handleCodigoManualChange(e.target.value)}
-                  className="w-24 rounded border border-[var(--pos-border)] bg-black px-2 py-1"
-                />
-              </div>
-              <div>
-                <label className="block text-[var(--pos-text-dim)]">
-                  {nombreEncontrado ? nombreEncontrado.nombre : codigoManual.length === 5 ? 'Codigo no encontrado' : ' '}
-                </label>
-                <input
-                  ref={cantidadRef}
-                  value={cantidadManual}
-                  onChange={(e) => setCantidadManual(e.target.value.replace(/\D/g, ''))}
-                  onKeyDown={(e) => e.key === 'Enter' && agregarPorCodigoManual()}
-                  placeholder="Cant."
-                  className="w-20 rounded border border-[var(--pos-border)] bg-black px-2 py-1"
-                />
-              </div>
-              <button
-                onClick={agregarPorCodigoManual}
-                disabled={!nombreEncontrado}
-                className="rounded bg-[var(--pos-violet-dim)] px-3 py-1.5 disabled:opacity-30"
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+              {/* Tiempo de mesa / cancha */}
+              <div
+                className={`mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3 ring-1 ${
+                  tiempoCorriendo ? 'bg-[var(--pos-accent-soft)] ring-[var(--pos-accent-border)]' : 'bg-[var(--pos-panel-2)] ring-[var(--pos-border)]'
+                }`}
               >
-                Agregar
-              </button>
-              <span className="ml-auto font-bold">Total: $ {total.toLocaleString('es-AR')}</span>
-            </div>
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--pos-panel)] ${
+                      tiempoCorriendo ? 'text-[var(--pos-accent)]' : 'text-[var(--pos-text-dim)] ring-1 ring-[var(--pos-border)]'
+                    }`}
+                  >
+                    <Icon name="clock" size={20} />
+                  </span>
+                  <div className="text-sm leading-tight">
+                    {tiempoCorriendo ? (
+                      <>
+                        <p className="font-mono text-2xl font-semibold tabular-nums text-[var(--pos-accent)]">
+                          {formatearDuracion(segundosTranscurridos)}
+                        </p>
+                        <p className="text-xs text-[var(--pos-text-dim)]">Desde {sesion?.inicio_tiempo}</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-medium">Tiempo de uso</p>
+                        <p className="text-xs text-[var(--pos-text-dim)]">
+                          {sesion?.inicio_tiempo ? `${sesion.inicio_tiempo} → ${sesion.fin_tiempo ?? '--:--'}` : 'Sin tiempo iniciado'}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleIniciarSesion}
+                    disabled={tiempoCorriendo}
+                    className="btn rounded-lg px-3 py-1.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Iniciar
+                  </button>
+                  <button
+                    onClick={handleDetenerSesion}
+                    disabled={!tiempoCorriendo}
+                    className="btn rounded-lg px-3 py-1.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Detener
+                  </button>
+                </div>
+                {mensajeSesion && <p className="w-full text-xs text-[var(--pos-text-dim)]">{mensajeSesion}</p>}
+              </div>
 
-            <div className="mb-3 rounded border border-[var(--pos-border)] p-2 text-sm">
-              <p>
-                Inicio: {sesion?.inicio_tiempo ?? '--:--:--'} &nbsp; Fin: {sesion?.fin_tiempo ?? '--:--:--'}
-              </p>
-              {sesion?.estado === 'ABIERTA' && (
-                <p className="text-[var(--pos-green)]">⏳ Tiempo transcurrido: {formatearDuracion(segundosTranscurridos)}</p>
-              )}
-              {mensajeSesion && <p className="text-[var(--pos-text-dim)]">{mensajeSesion}</p>}
-              <div className="mt-2 flex gap-2">
+              {/* Consumos */}
+              <div className="overflow-hidden rounded-xl ring-1 ring-[var(--pos-border)]">
+                <table className="pos-venta-tabla w-full border-collapse text-left text-sm">
+                  <thead>
+                    <tr>
+                      <th className="w-20">Código</th>
+                      <th>Producto</th>
+                      <th className="w-16 text-right">Cant.</th>
+                      <th className="w-24 text-right">Precio</th>
+                      <th className="w-24 text-right">Importe</th>
+                      <th className="w-8" aria-label="Quitar"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-6 text-center text-sm text-[var(--pos-text-dim)]">
+                          Sin consumos. Escaneá un producto o cargalo por código abajo.
+                        </td>
+                      </tr>
+                    ) : (
+                      items.map((item, i) => (
+                        <tr
+                          key={i}
+                          onContextMenu={(e) => {
+                            e.preventDefault()
+                            quitarItem(i)
+                          }}
+                        >
+                          <td className="font-mono text-xs text-[var(--pos-text-dim)]">{item.codigo}</td>
+                          <td>{item.nombre}</td>
+                          <td className="text-right tabular-nums">{item.cantidad}</td>
+                          <td className="text-right tabular-nums">{money(item.precio)}</td>
+                          <td className="text-right font-semibold tabular-nums">{money(item.cantidad * item.precio)}</td>
+                          <td className="text-center">
+                            <button onClick={() => quitarItem(i)} className="btn-x px-1 py-0.5" title="Quitar">
+                              <Icon name="x" size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Carga manual */}
+              <div className="mt-4 flex flex-wrap items-end gap-2 text-sm">
+                <div>
+                  <label className="section-label mb-1 block">Código</label>
+                  <input
+                    value={codigoManual}
+                    onChange={(e) => handleCodigoManualChange(e.target.value)}
+                    placeholder="5 dígitos"
+                    className="w-28 rounded-lg border border-[var(--pos-border)] bg-[var(--pos-input)] px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="section-label mb-1 block">Cantidad</label>
+                  <input
+                    ref={cantidadRef}
+                    value={cantidadManual}
+                    onChange={(e) => setCantidadManual(e.target.value.replace(/\D/g, ''))}
+                    onKeyDown={(e) => e.key === 'Enter' && agregarPorCodigoManual()}
+                    placeholder="Cant."
+                    className="w-20 rounded-lg border border-[var(--pos-border)] bg-[var(--pos-input)] px-3 py-2"
+                  />
+                </div>
                 <button
-                  onClick={handleIniciarSesion}
-                  disabled={sesion?.estado === 'ABIERTA'}
-                  className="rounded bg-[var(--pos-violet-dim)] px-3 py-1 text-xs disabled:opacity-30"
+                  onClick={agregarPorCodigoManual}
+                  disabled={!nombreEncontrado}
+                  className="btn flex items-center gap-1 rounded-lg px-3 py-2 font-medium disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  Iniciar tiempo de juego
+                  <Icon name="plus" size={15} /> Agregar
                 </button>
-                <button
-                  onClick={handleDetenerSesion}
-                  disabled={sesion?.estado !== 'ABIERTA'}
-                  className="rounded bg-[var(--pos-violet-dim)] px-3 py-1 text-xs disabled:opacity-30"
+                <span
+                  className={`min-w-0 flex-1 truncate pb-2 text-sm ${
+                    nombreEncontrado ? 'font-medium text-[var(--pos-green)]' : 'text-[var(--pos-red)]'
+                  }`}
                 >
-                  Detener
-                </button>
+                  {nombreEncontrado
+                    ? `${nombreEncontrado.nombre} · ${money(nombreEncontrado.precio)}`
+                    : codigoManual.length === 5
+                      ? 'Código no encontrado'
+                      : ''}
+                </span>
               </div>
             </div>
 
-            <div className="flex justify-end gap-2">
-              <button onClick={handleGuardar} className="rounded border border-[var(--pos-border)] px-3 py-1.5 text-sm hover:border-[var(--pos-violet)]">
-                Guardar
-              </button>
-              <button onClick={handleFacturarClick} className="rounded bg-[var(--pos-violet)] px-3 py-1.5 text-sm font-semibold text-white hover:brightness-110">
-                Facturar
-              </button>
-            </div>
+            <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--pos-border)] bg-[var(--pos-panel-2)] px-5 py-4">
+              <div>
+                <p className="section-label">Total de la cuenta</p>
+                <p className="text-2xl font-bold tabular-nums text-[var(--pos-total-text)]">{money(total)}</p>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={handleGuardar} className="btn rounded-xl px-4 py-2.5 text-sm font-semibold">
+                  Guardar
+                </button>
+                <button onClick={handleFacturarClick} className="pos-venta-go rounded-xl px-5 py-2.5 text-sm font-semibold">
+                  Cobrar
+                </button>
+              </div>
+            </footer>
           </>
-
         )}
 
         {mostrarSelectorMedioPago && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/90">
-            <div className="rounded border border-[var(--pos-border)] bg-[var(--pos-panel)] p-4">
-              <p className="mb-2 text-center text-sm">Medio de pago</p>
-              <div className="flex gap-2">
+          <div className="pos-overlay absolute inset-0 flex items-center justify-center rounded-2xl p-4">
+            <div className="w-full max-w-md rounded-2xl border border-[var(--pos-border)] bg-[var(--pos-panel)] p-5">
+              <p className="mb-1 text-base font-semibold">¿Cómo paga?</p>
+              <p className="mb-4 text-sm text-[var(--pos-text-dim)]">Total {money(total)}</p>
+              <div className="grid grid-cols-2 gap-2">
                 {MEDIOS_PAGO.map((medio) => (
                   <button
                     key={medio}
                     onClick={() => confirmarMedioPagoYFacturar(medio)}
-                    className="rounded bg-[var(--pos-violet-dim)] px-3 py-1.5 text-sm hover:brightness-125"
+                    className="btn rounded-xl px-3 py-3 text-sm font-semibold"
                   >
                     {medio}
                   </button>
                 ))}
               </div>
+              <button
+                onClick={() => setMostrarSelectorMedioPago(false)}
+                className="mt-3 w-full rounded-lg py-2 text-sm text-[var(--pos-text-dim)] hover:text-[var(--pos-text)]"
+              >
+                Cancelar
+              </button>
             </div>
           </div>
         )}

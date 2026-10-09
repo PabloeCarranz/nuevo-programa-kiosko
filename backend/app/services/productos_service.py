@@ -16,6 +16,17 @@ RUBRO_DE_TABLA = {
     "MESA_POOL": "mesa_pool",
 }
 
+# Columnas de las tablas que crean los rubros nuevos (mismo esquema que GOLOSINAS)
+CAMPOS_TABLA_NUEVA = dict(TABLAS_CAMPOS["GOLOSINAS"])
+
+
+def registrar_tabla(tabla: str, rubro: str, primer_codigo: int) -> None:
+    """Llamado por rangos.recargar(): suma a los diccionarios de este modulo las
+    tablas de los rubros que agrego el Master."""
+    TABLAS_CAMPOS.setdefault(tabla, dict(CAMPOS_TABLA_NUEVA))
+    RUBRO_DE_TABLA[tabla] = rubro
+    BASE_CODIGO_POR_TABLA.setdefault(tabla, primer_codigo)
+
 
 def buscar_producto(conn: sqlite3.Connection, codigo_str: str) -> dict | None:
     codigo_str = codigo_str.strip()
@@ -78,6 +89,11 @@ def crear_producto(conn: sqlite3.Connection, tabla: str, nombre: str, cantidad: 
     campos = TABLAS_CAMPOS[tabla]
     maximo = conn.execute(f"SELECT MAX({campos['codigo']}) AS m FROM {tabla}").fetchone()["m"]
     codigo = (maximo + 1) if maximo is not None else BASE_CODIGO_POR_TABLA[tabla]
+    from app.services.rangos import RANGOS  # import aca para evitar el ciclo
+
+    hasta = next((r["hasta"] for r in RANGOS.values() if r["tabla"] == tabla), None)
+    if hasta is not None and codigo > hasta:
+        raise ValueError("Este rubro ya uso todos sus codigos disponibles")
     conn.execute(
         f"""INSERT INTO {tabla} ({campos['codigo']}, {campos['nombre']}, CANTIDAD, {campos['precio']}, {campos['barras']}, {campos['activo']}, {campos['saldo']})
             VALUES (?, ?, ?, ?, ?, 1, ?)""",

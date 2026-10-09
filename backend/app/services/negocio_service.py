@@ -49,6 +49,12 @@ def obtener(conn: sqlite3.Connection) -> dict:
     return dict(fila) if fila else dict(POR_DEFECTO)
 
 
+def esta_configurado(conn: sqlite3.Connection) -> bool:
+    """False solo en una instalacion nueva: todavia nadie le puso nombre al sistema."""
+    asegurar_tabla(conn)
+    return conn.execute("SELECT 1 FROM NEGOCIO WHERE id = 1").fetchone() is not None
+
+
 def guardar(conn: sqlite3.Connection, datos: dict) -> dict:
     asegurar_tabla(conn)
     valores = [datos[c] for c in CAMPOS]

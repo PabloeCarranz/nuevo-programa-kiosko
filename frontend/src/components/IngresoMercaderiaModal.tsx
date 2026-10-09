@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { buscarProducto } from '../api/productos'
 import { anularIngreso, listarIngresosRecientes, registrarIngreso } from '../api/ingresos'
 import type { Ingreso } from '../api/ingresos'
+import { useNegocioStore } from '../store/negocioStore'
 
-const RUBROS = ['golosinas', 'bebidas', 'cigarros'] as const
 
 function formatearFecha(fecha: string): string {
   const parte = fecha.split(' ')[0] // "YYYY-MM-DD"
@@ -13,7 +13,10 @@ function formatearFecha(fecha: string): string {
 }
 
 export default function IngresoMercaderiaModal({ onCerrar }: { onCerrar: () => void }) {
-  const [rubro, setRubro] = useState<(typeof RUBROS)[number]>('golosinas')
+  // El rubro de alquiler por tiempo no tiene mercaderia
+  const todosLosRubros = useNegocioStore((s) => s.rubros)
+  const rubros = todosLosRubros.filter((r) => !r.es_tiempo)
+  const [rubro, setRubro] = useState<string>(() => rubros[0]?.clave ?? 'golosinas')
   const [codigo, setCodigo] = useState('')
   const [nombre, setNombre] = useState<string | null>(null)
   const [cantidad, setCantidad] = useState('')
@@ -70,38 +73,40 @@ export default function IngresoMercaderiaModal({ onCerrar }: { onCerrar: () => v
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/90">
+    <div className="fixed inset-0 z-40 flex items-center justify-center pos-overlay">
       <div className="w-[520px] rounded-lg border border-[var(--pos-border)] bg-[var(--pos-panel)] p-4 text-[var(--pos-text)]">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[var(--pos-violet)]">Ingreso de Mercaderia</h2>
-          <button onClick={onCerrar} className="text-[var(--pos-text-dim)] hover:text-white">✕</button>
+          <h2 className="text-lg font-bold text-[var(--pos-primary)]">Ingreso de Mercaderia</h2>
+          <button onClick={onCerrar} className="text-[var(--pos-text-dim)] hover:text-[var(--pos-text)]">✕</button>
         </div>
 
         <div className="mb-3 grid grid-cols-2 gap-2 text-sm">
           <div>
             <label className="block text-[var(--pos-text-dim)]">Rubro</label>
-            <select value={rubro} onChange={(e) => setRubro(e.target.value as typeof rubro)} className="w-full rounded border border-[var(--pos-border)] bg-black px-2 py-1">
-              {RUBROS.map((r) => (
-                <option key={r} value={r}>{r}</option>
+            <select value={rubro} onChange={(e) => setRubro(e.target.value)} className="w-full rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1">
+              {rubros.map((r) => (
+                <option key={r.clave} value={r.clave}>
+                  {r.emoji} {r.nombre}
+                </option>
               ))}
             </select>
           </div>
           <div>
             <label className="block text-[var(--pos-text-dim)]">Codigo (5 digitos)</label>
-            <input value={codigo} onChange={(e) => handleCodigoChange(e.target.value)} className="w-full rounded border border-[var(--pos-border)] bg-black px-2 py-1" />
+            <input value={codigo} onChange={(e) => handleCodigoChange(e.target.value)} className="w-full rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1" />
           </div>
         </div>
         <p className="mb-2 text-sm text-[var(--pos-text-dim)]">{nombre ?? (codigo.length === 5 ? 'Codigo no encontrado' : ' ')}</p>
         <div className="mb-2">
           <label className="block text-sm text-[var(--pos-text-dim)]">Cantidad</label>
-          <input value={cantidad} onChange={(e) => setCantidad(e.target.value.replace(/\D/g, ''))} className="w-full rounded border border-[var(--pos-border)] bg-black px-2 py-1" />
+          <input value={cantidad} onChange={(e) => setCantidad(e.target.value.replace(/\D/g, ''))} className="w-full rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1" />
         </div>
         <div className="mb-3">
           <label className="block text-sm text-[var(--pos-text-dim)]">Comentarios (max 50)</label>
           <textarea
             value={comentario}
             onChange={(e) => setComentario(e.target.value.slice(0, 50))}
-            className="w-full rounded border border-[var(--pos-border)] bg-black px-2 py-1 text-sm"
+            className="w-full rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1 text-sm"
             rows={2}
           />
         </div>
@@ -112,7 +117,7 @@ export default function IngresoMercaderiaModal({ onCerrar }: { onCerrar: () => v
           <button
             onClick={handleRegistrar}
             disabled={!nombre || !cantidad}
-            className="rounded bg-[var(--pos-violet)] px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-40"
+            className="rounded bg-[var(--pos-primary)] px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-40"
           >
             Registrar Ingreso
           </button>

@@ -30,17 +30,17 @@ export default function CierreCajaModal({ onCerrado, onCancelar }: { onCerrado: 
   const money = (n: number) => `$ ${n.toLocaleString('es-AR')}`
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/90">
+    <div className="fixed inset-0 z-40 flex items-center justify-center pos-overlay">
       <div className="max-h-[85vh] w-[600px] overflow-auto rounded-lg border border-[var(--pos-border)] bg-[var(--pos-panel)] p-4 text-[var(--pos-text)]">
-        <h2 className="mb-3 text-center text-lg font-bold text-[var(--pos-violet)]">🧾 Cierre de Caja</h2>
+        <h2 className="mb-3 text-center text-lg font-bold text-[var(--pos-primary)]">🧾 Cierre de Caja</h2>
 
         {reporteFinal ? (
           <>
-            <pre className="max-h-96 overflow-auto whitespace-pre rounded bg-black p-3 font-mono text-xs leading-tight">{reporteFinal}</pre>
+            <pre className="max-h-96 overflow-auto whitespace-pre rounded bg-[var(--pos-input)] p-3 font-mono text-xs leading-tight">{reporteFinal}</pre>
             <div className="mt-3 flex justify-end">
               <button
                 onClick={onCerrado}
-                className="rounded bg-[var(--pos-violet)] px-4 py-1.5 text-sm font-semibold text-white hover:brightness-110"
+                className="rounded bg-[var(--pos-primary)] px-4 py-1.5 text-sm font-semibold text-white hover:brightness-110"
               >
                 Aceptar
               </button>
@@ -56,7 +56,7 @@ export default function CierreCajaModal({ onCerrado, onCancelar }: { onCerrado: 
               <p className="mb-2 text-sm text-[var(--pos-text-dim)]">Desde: {resumen.desde}</p>
               {resumen.grupos.map((grupo) => (
                 <div key={grupo.metodo_pago} className="mb-3 rounded border border-[var(--pos-border)] p-2 text-sm">
-                  <p className="mb-1 font-semibold text-[var(--pos-violet)]">{grupo.metodo_pago}</p>
+                  <p className="mb-1 font-semibold text-[var(--pos-primary)]">{grupo.metodo_pago}</p>
                   <table className="w-full text-xs">
                     <tbody>
                       {grupo.lineas.map((linea) => (
@@ -84,7 +84,7 @@ export default function CierreCajaModal({ onCerrado, onCancelar }: { onCerrado: 
                 <button
                   onClick={handleGuardarReporte}
                   disabled={confirmando}
-                  className="rounded bg-[var(--pos-violet)] px-3 py-1.5 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50"
+                  className="rounded bg-[var(--pos-primary)] px-3 py-1.5 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50"
                 >
                   {confirmando ? 'Guardando...' : '💾 Guardar Reporte'}
                 </button>

@@ -17,19 +17,19 @@ export default function ControlStockModal({ onCerrar }: { onCerrar: () => void }
   const [modo, setModo] = useState<Modo>('menu')
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/90">
+    <div className="fixed inset-0 z-40 flex items-center justify-center pos-overlay">
       <div className="max-h-[85vh] w-[640px] overflow-auto rounded-lg border border-[var(--pos-border)] bg-[var(--pos-panel)] p-4 text-[var(--pos-text)]">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[var(--pos-violet)]">Controlar Stock</h2>
-          <button onClick={onCerrar} className="text-[var(--pos-text-dim)] hover:text-white">✕</button>
+          <h2 className="text-lg font-bold text-[var(--pos-primary)]">Controlar Stock</h2>
+          <button onClick={onCerrar} className="text-[var(--pos-text-dim)] hover:text-[var(--pos-text)]">✕</button>
         </div>
 
         {modo === 'menu' && (
           <div className="flex gap-3">
-            <button onClick={() => setModo('inventario')} className="flex-1 rounded border border-[var(--pos-border)] py-6 hover:border-[var(--pos-violet)]">
+            <button onClick={() => setModo('inventario')} className="flex-1 rounded border border-[var(--pos-border)] py-6 hover:border-[var(--pos-primary)]">
               📋 Inventario
             </button>
-            <button onClick={() => setModo('ajustes')} className="flex-1 rounded border border-[var(--pos-border)] py-6 hover:border-[var(--pos-violet)]">
+            <button onClick={() => setModo('ajustes')} className="flex-1 rounded border border-[var(--pos-border)] py-6 hover:border-[var(--pos-primary)]">
               ⚖️ Ajustes de Stock
             </button>
           </div>
@@ -89,16 +89,16 @@ function InventarioPanel({ onVolver }: { onVolver: () => void }) {
 
   return (
     <div>
-      <button onClick={onVolver} className="mb-3 text-sm text-[var(--pos-text-dim)] hover:text-white">← Volver</button>
+      <button onClick={onVolver} className="mb-3 text-sm text-[var(--pos-text-dim)] hover:text-[var(--pos-text)]">← Volver</button>
       <div className="mb-2">
         <label className="block text-sm text-[var(--pos-text-dim)]">Fecha del conteo</label>
-        <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="rounded border border-[var(--pos-border)] bg-black px-2 py-1 text-sm" />
+        <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1 text-sm" />
       </div>
       <div className="mb-2 flex gap-2 text-sm">
-        <input placeholder="Codigo" value={codigo} onChange={(e) => handleCodigo(e.target.value)} className="w-28 rounded border border-[var(--pos-border)] bg-black px-2 py-1" />
+        <input placeholder="Codigo" value={codigo} onChange={(e) => handleCodigo(e.target.value)} className="w-28 rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1" />
         <span className="flex items-center text-[var(--pos-text-dim)]">{nombre ?? ''}</span>
-        <input placeholder="Cant. fisica" value={cantidad} onChange={(e) => setCantidad(e.target.value.replace(/[^0-9.]/g, ''))} className="w-24 rounded border border-[var(--pos-border)] bg-black px-2 py-1" />
-        <button onClick={agregar} disabled={!nombre} className="rounded bg-[var(--pos-violet-dim)] px-3 disabled:opacity-30">Agregar</button>
+        <input placeholder="Cant. fisica" value={cantidad} onChange={(e) => setCantidad(e.target.value.replace(/[^0-9.]/g, ''))} className="w-24 rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1" />
+        <button onClick={agregar} disabled={!nombre} className="rounded bg-[var(--pos-primary-soft)] px-3 disabled:opacity-30">Agregar</button>
         <button onClick={deshacer} className="rounded border border-[var(--pos-border)] px-3">Deshacer</button>
       </div>
       <table className="mb-3 w-full text-xs">
@@ -109,7 +109,7 @@ function InventarioPanel({ onVolver }: { onVolver: () => void }) {
         </tbody>
       </table>
       <div className="flex gap-2">
-        <button onClick={guardar} disabled={items.length === 0} className="rounded bg-[var(--pos-violet)] px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-30">
+        <button onClick={guardar} disabled={items.length === 0} className="rounded bg-[var(--pos-primary)] px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-30">
           Guardar Inventario
         </button>
         <button onClick={verDiferencias} className="rounded border border-[var(--pos-border)] px-3 py-1.5 text-sm">
@@ -188,19 +188,19 @@ function AjustesPanel({ onVolver }: { onVolver: () => void }) {
 
   return (
     <div>
-      <button onClick={onVolver} className="mb-3 text-sm text-[var(--pos-text-dim)] hover:text-white">← Volver</button>
+      <button onClick={onVolver} className="mb-3 text-sm text-[var(--pos-text-dim)] hover:text-[var(--pos-text)]">← Volver</button>
       <div className="mb-2 flex gap-2 text-sm">
-        <button onClick={() => setTipo('MAS')} className={`rounded px-3 py-1 ${tipo === 'MAS' ? 'bg-[var(--pos-green)] text-black' : 'border border-[var(--pos-border)]'}`}>Ajuste ++</button>
-        <button onClick={() => setTipo('MENOS')} className={`rounded px-3 py-1 ${tipo === 'MENOS' ? 'bg-[var(--pos-red)] text-black' : 'border border-[var(--pos-border)]'}`}>Ajuste --</button>
+        <button onClick={() => setTipo('MAS')} className={`rounded px-3 py-1 ${tipo === 'MAS' ? 'bg-[var(--pos-green)] text-white' : 'border border-[var(--pos-border)]'}`}>Ajuste ++</button>
+        <button onClick={() => setTipo('MENOS')} className={`rounded px-3 py-1 ${tipo === 'MENOS' ? 'bg-[var(--pos-red)] text-white' : 'border border-[var(--pos-border)]'}`}>Ajuste --</button>
       </div>
       <div className="mb-2 grid grid-cols-2 gap-2 text-sm">
-        <input placeholder="Codigo" value={codigo} onChange={(e) => handleCodigo(e.target.value)} className="rounded border border-[var(--pos-border)] bg-black px-2 py-1" />
-        <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="rounded border border-[var(--pos-border)] bg-black px-2 py-1" />
+        <input placeholder="Codigo" value={codigo} onChange={(e) => handleCodigo(e.target.value)} className="rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1" />
+        <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} className="rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1" />
       </div>
       <p className="mb-2 text-sm text-[var(--pos-text-dim)]">{nombre ?? (codigo.length === 5 ? 'Codigo no encontrado' : ' ')}</p>
       <div className="mb-2 grid grid-cols-2 gap-2 text-sm">
-        <input placeholder="Cantidad" value={cantidad} onChange={(e) => setCantidad(e.target.value.replace(/\D/g, ''))} className="rounded border border-[var(--pos-border)] bg-black px-2 py-1" />
-        <input placeholder="Comentario" value={comentario} onChange={(e) => setComentario(e.target.value)} className="rounded border border-[var(--pos-border)] bg-black px-2 py-1" />
+        <input placeholder="Cantidad" value={cantidad} onChange={(e) => setCantidad(e.target.value.replace(/\D/g, ''))} className="rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1" />
+        <input placeholder="Comentario" value={comentario} onChange={(e) => setComentario(e.target.value)} className="rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1" />
       </div>
       <div className="flex justify-between">
         <button
@@ -212,7 +212,7 @@ function AjustesPanel({ onVolver }: { onVolver: () => void }) {
         >
           {mostrarRecientes ? 'Ocultar' : 'Ver'} ajustes recientes
         </button>
-        <button onClick={registrar} disabled={!nombre || !cantidad} className="rounded bg-[var(--pos-violet)] px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-30">
+        <button onClick={registrar} disabled={!nombre || !cantidad} className="rounded bg-[var(--pos-primary)] px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-30">
           Registrar Ajuste
         </button>
       </div>

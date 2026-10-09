@@ -32,11 +32,11 @@ export default function SesionesPoolModal({ onCerrar }: { onCerrar: () => void }
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/90">
+    <div className="fixed inset-0 z-40 flex items-center justify-center pos-overlay">
       <div className="max-h-[85vh] w-[820px] overflow-auto rounded-lg border border-[var(--pos-border)] bg-[var(--pos-panel)] p-4 text-[var(--pos-text)]">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[var(--pos-violet)]">Sesiones de Mesa de Pool (F10)</h2>
-          <button onClick={onCerrar} className="text-[var(--pos-text-dim)] hover:text-white">✕</button>
+          <h2 className="text-lg font-bold text-[var(--pos-primary)]">Sesiones de Mesa de Pool (F10)</h2>
+          <button onClick={onCerrar} className="text-[var(--pos-text-dim)] hover:text-[var(--pos-text)]">✕</button>
         </div>
         <table className="w-full text-xs">
           <thead>

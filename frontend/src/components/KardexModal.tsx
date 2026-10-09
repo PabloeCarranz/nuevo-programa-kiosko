@@ -19,11 +19,11 @@ export default function KardexModal({ onCerrar }: { onCerrar: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/90">
+    <div className="fixed inset-0 z-40 flex items-center justify-center pos-overlay">
       <div className="max-h-[85vh] w-[640px] overflow-auto rounded-lg border border-[var(--pos-border)] bg-[var(--pos-panel)] p-4 text-[var(--pos-text)]">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[var(--pos-violet)]">Movimientos de Stock</h2>
-          <button onClick={onCerrar} className="text-[var(--pos-text-dim)] hover:text-white">✕</button>
+          <h2 className="text-lg font-bold text-[var(--pos-primary)]">Movimientos de Stock</h2>
+          <button onClick={onCerrar} className="text-[var(--pos-text-dim)] hover:text-[var(--pos-text)]">✕</button>
         </div>
 
         <div className="mb-3 flex gap-2">
@@ -32,9 +32,9 @@ export default function KardexModal({ onCerrar }: { onCerrar: () => void }) {
             onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 5))}
             onKeyDown={(e) => e.key === 'Enter' && buscar()}
             placeholder="Codigo del producto"
-            className="w-40 rounded border border-[var(--pos-border)] bg-black px-2 py-1 text-sm"
+            className="w-40 rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1 text-sm"
           />
-          <button onClick={buscar} className="rounded bg-[var(--pos-violet)] px-3 py-1 text-sm font-semibold text-white">
+          <button onClick={buscar} className="rounded bg-[var(--pos-primary)] px-3 py-1 text-sm font-semibold text-white">
             Buscar
           </button>
         </div>

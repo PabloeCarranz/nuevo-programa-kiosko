@@ -1,6 +1,4 @@
 import { create } from 'zustand'
-import { obtenerRangosProducto } from '../api/config'
-import type { RangosProducto } from '../api/config'
 import { confirmarFactura } from '../api/facturacion'
 import type { ConfirmarFacturaResponse } from '../api/facturacion'
 import { useNegocioStore } from './negocioStore'
@@ -16,26 +14,25 @@ export interface FilaCarrito {
 }
 
 interface Subtotales {
-  golosinas: number
-  bebidas: number
-  cigarros: number
-  mesa_pool: number
+  // Clave de rubro -> importe. Los rubros los define el Master (ver negocioStore).
+  porRubro: Record<string, number>
   subtotal: number
 }
 
-const SUBTOTALES_VACIOS: Subtotales = { golosinas: 0, bebidas: 0, cigarros: 0, mesa_pool: 0, subtotal: 0 }
+const SUBTOTALES_VACIOS: Subtotales = { porRubro: {}, subtotal: 0 }
 
-function clasificar(items: FilaCarrito[], rangos: RangosProducto): Subtotales {
-  const acc = { ...SUBTOTALES_VACIOS }
+// Cada codigo cae en el rango de un rubro; asi se arma el detalle por rubro.
+function clasificar(items: FilaCarrito[]): Subtotales {
+  const rubros = useNegocioStore.getState().rubros
+  const porRubro: Record<string, number> = {}
+  let subtotal = 0
   for (const item of items) {
     const total = item.cantidad * item.precio
-    const rubro = Object.entries(rangos).find(([, r]) => item.codigo >= r.desde && item.codigo <= r.hasta)?.[0]
-    if (rubro && rubro in acc) {
-      ;(acc as unknown as Record<string, number>)[rubro] += total
-    }
-    acc.subtotal += total
+    const rubro = rubros.find((r) => item.codigo >= r.desde && item.codigo <= r.hasta)
+    if (rubro) porRubro[rubro.clave] = (porRubro[rubro.clave] ?? 0) + total
+    subtotal += total
   }
-  return acc
+  return { porRubro, subtotal }
 }
 
 function armarTextoPreview(params: {
@@ -79,7 +76,6 @@ function armarTextoPreview(params: {
 }
 
 interface VentaState {
-  rangos: RangosProducto | null
   items: FilaCarrito[]
   estado: EstadoVenta
   cliente: string
@@ -93,7 +89,6 @@ interface VentaState {
   enviando: boolean
   sesionPoolId: number | null
 
-  cargarRangos: () => Promise<void>
   setItemsDesdeEscaner: (items: FilaCarrito[]) => void
   setCliente: (nombre: string) => void
   setSesionPoolId: (id: number | null) => void
@@ -105,7 +100,6 @@ interface VentaState {
 }
 
 export const useVentaStore = create<VentaState>((set, get) => ({
-  rangos: null,
   items: [],
   estado: 'idle',
   cliente: 'Usuario Final',
@@ -119,21 +113,15 @@ export const useVentaStore = create<VentaState>((set, get) => ({
   enviando: false,
   sesionPoolId: null,
 
-  cargarRangos: async () => {
-    if (get().rangos) return
-    const rangos = await obtenerRangosProducto()
-    set({ rangos })
-  },
-
   setItemsDesdeEscaner: (items) => set({ items }),
   setCliente: (nombre) => set({ cliente: nombre }),
   setSesionPoolId: (id) => set({ sesionPoolId: id }),
   setMedioPago: (medio) => set({ medioPago: medio, multipagoEfectivo: 0, multipagoTransferencia: 0 }),
 
   calcularTotal: (efectivo) => {
-    const { items, rangos, medioPago } = get()
-    if (!rangos || items.length === 0) return
-    const subtotales = clasificar(items, rangos)
+    const { items, medioPago } = get()
+    if (items.length === 0) return
+    const subtotales = clasificar(items)
     let multipagoEfectivo = 0
     let multipagoTransferencia = 0
     if (medioPago === 'Multipago') {

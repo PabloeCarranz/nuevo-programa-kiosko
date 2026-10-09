@@ -4,8 +4,7 @@ import type { ProductoConRubro } from '../api/productos'
 import { listarSesiones } from '../api/pool'
 import type { SesionPool } from '../api/pool'
 import { useAuthStore } from '../store/authStore'
-import { RUBROS, useNegocioStore } from '../store/negocioStore'
-import type { Rubro } from '../store/negocioStore'
+import { useNegocioStore } from '../store/negocioStore'
 import type { FilaCarrito } from '../store/ventaStore'
 
 type Columna = 'codigo' | 'cantidad'
@@ -35,7 +34,8 @@ export default function FacturacionScanner({
   onCancelar: () => void
 }) {
   const usuario = useAuthStore((s) => s.usuario)
-  const { negocio, nombreRubro } = useNegocioStore()
+  const { negocio, rubros, nombreRubro } = useNegocioStore()
+  const rubroTiempo = rubros.find((r) => r.es_tiempo)
 
   const [filas, setFilas] = useState<FilaCarrito[]>(itemsIniciales)
   const [cursor, setCursor] = useState<Cursor>({ fila: itemsIniciales.length, col: 'codigo' })
@@ -43,7 +43,7 @@ export default function FacturacionScanner({
   const [buscando, setBuscando] = useState(false)
   const [noEncontrado, setNoEncontrado] = useState(false)
   const [mostrarBusqueda, setMostrarBusqueda] = useState(false)
-  const [rubroBusqueda, setRubroBusqueda] = useState<Rubro | null>(null)
+  const [rubroBusqueda, setRubroBusqueda] = useState<string | null>(null)
   const [productosTodos, setProductosTodos] = useState<ProductoConRubro[] | null>(null)
   const [filtroTexto, setFiltroTexto] = useState('')
   const [indiceSeleccionado, setIndiceSeleccionado] = useState(0)
@@ -106,7 +106,7 @@ export default function FacturacionScanner({
     }
   }
 
-  async function abrirBusqueda(rubro: Rubro | null = null) {
+  async function abrirBusqueda(rubro: string | null = null) {
     setMostrarBusqueda(true)
     setRubroBusqueda(rubro)
     setFiltroTexto('')
@@ -221,10 +221,10 @@ export default function FacturacionScanner({
         aria-hidden
       />
 
-      <header className="pos-venta-bar flex flex-wrap items-center justify-between gap-2 rounded-lg px-4 py-2.5">
+      <header className="pos-venta-bar flex flex-wrap items-center justify-between gap-2 rounded-xl px-4 py-2.5">
         <div className="flex flex-wrap items-baseline gap-x-3">
           <span className="pos-venta-brand">{negocio.nombre}</span>
-          <span className="font-mono text-[11px] tracking-[0.15em] text-[var(--pos-text-dim)] uppercase">
+          <span className="font-mono text-[0.6875rem] tracking-[0.15em] text-[var(--pos-text-dim)] uppercase">
             Caja {numeroCaja} · Cajero: {usuario?.usuario}
           </span>
         </div>
@@ -234,7 +234,7 @@ export default function FacturacionScanner({
       </header>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[1.6fr_1fr]">
-        <section className="pos-venta-panel flex min-h-0 flex-col rounded-lg p-3">
+        <section className="pos-venta-panel flex min-h-0 flex-col rounded-2xl p-4">
           <div className="mb-2 flex items-center justify-between gap-2">
             <h2 className="pos-venta-label">Venta en curso</h2>
             <span className={`text-xs ${noEncontrado ? 'text-[var(--pos-red)]' : 'text-[var(--pos-text-dim)]'}`}>
@@ -272,13 +272,13 @@ export default function FacturacionScanner({
                           className="pos-venta-input w-16 text-right"
                         />
                       ) : (
-                        <span className="tabular-nums">{fila.cantidad || <span className="text-[var(--pos-pink)]">—</span>}</span>
+                        <span className="tabular-nums">{fila.cantidad || <span className="text-[var(--pos-accent)]">—</span>}</span>
                       )}
                     </td>
                     <td className="text-right tabular-nums">{pesos(fila.precio)}</td>
                     <td className="text-right font-semibold tabular-nums">{pesos(fila.cantidad * fila.precio)}</td>
                     <td className="text-center">
-                      <button tabIndex={-1} onClick={() => quitarFila(i)} className="neon-x text-xs" title="Quitar de la venta">
+                      <button tabIndex={-1} onClick={() => quitarFila(i)} className="btn-x px-1.5 py-0.5 text-xs" title="Quitar de la venta">
                         ✕
                       </button>
                     </td>
@@ -310,48 +310,48 @@ export default function FacturacionScanner({
         </section>
 
         <aside className="flex min-h-0 flex-col gap-3 overflow-y-auto">
-          <div className="pos-venta-total rounded-lg px-4 py-3">
+          <div className="pos-venta-total px-4 py-3">
             <div className="flex items-baseline justify-between">
               <span className="pos-venta-label">Total</span>
               <span className="text-xs text-[var(--pos-text-dim)]">
                 {unidades} {unidades === 1 ? 'unidad' : 'unidades'}
-                {pendientes > 0 && <span className="text-[var(--pos-pink)]"> · {pendientes} sin cantidad</span>}
+                {pendientes > 0 && <span className="text-[var(--pos-accent)]"> · {pendientes} sin cantidad</span>}
               </span>
             </div>
             <div className="pos-venta-total-num">$ {pesos(total)}</div>
           </div>
 
-          <button onClick={confirmar} className="pos-venta-go rounded-lg py-3 text-base font-bold">
+          <button onClick={confirmar} className="pos-venta-go rounded-xl py-3.5 text-base font-bold">
             F9 · Confirmar venta
           </button>
 
           <div className="grid grid-cols-2 gap-2">
-            {RUBROS.map((rubro) => (
-              <button key={rubro} onClick={() => abrirBusqueda(rubro)} className="neon-btn truncate rounded-md px-3 py-2.5 text-sm">
-                {nombreRubro(rubro)}
+            {rubros.filter((r) => r.activo).map((rubro) => (
+              <button key={rubro.clave} onClick={() => abrirBusqueda(rubro.clave)} className="btn truncate rounded-xl px-3 py-3 text-sm font-medium">
+                {rubro.emoji} {rubro.nombre}
               </button>
             ))}
-            <button onClick={() => abrirBusqueda()} className="neon-btn rounded-md px-3 py-2 text-xs text-[var(--pos-text-dim)]">
+            <button onClick={() => abrirBusqueda()} className="btn rounded-xl px-3 py-2 text-xs text-[var(--pos-text-dim)]">
               F2 · Buscar por nombre
             </button>
-            <button onClick={cancelar} className="neon-btn rounded-md px-3 py-2 text-xs text-[var(--pos-text-dim)]">
+            <button onClick={cancelar} className="btn rounded-xl px-3 py-2 text-xs text-[var(--pos-text-dim)]">
               ESC · Volver
             </button>
           </div>
 
-          <section className="pos-venta-panel rounded-lg p-3">
-            <h2 className="pos-venta-label mb-2">{nombreRubro('mesa_pool')} · en uso</h2>
+          <section className="pos-venta-panel rounded-2xl p-4">
+            <h2 className="pos-venta-label mb-2">{rubroTiempo?.nombre ?? 'Tiempo'} · en uso</h2>
             {sesionesAbiertas.length === 0 ? (
               <p className="text-xs text-[var(--pos-text-dim)]">No hay tiempo corriendo. Se inicia desde la ficha de cada cliente.</p>
             ) : (
               <ul className="flex flex-col gap-1.5">
                 {sesionesAbiertas.map((s) => (
-                  <li key={s.id} className="flex items-center justify-between rounded bg-white/[0.03] px-2.5 py-1.5 font-mono text-xs">
+                  <li key={s.id} className="flex items-center justify-between rounded-lg bg-[var(--pos-panel-2)] px-2.5 py-2 text-sm ring-1 ring-[var(--pos-border)]">
                     <span className="flex items-center gap-2">
-                      <span className="neon-dot-green inline-block h-1.5 w-1.5 rounded-full bg-[var(--pos-green)]" />
+                      <span className="dot-live pos-blink inline-block h-1.5 w-1.5 rounded-full bg-[var(--pos-accent)]" />
                       {s.cliente}
                     </span>
-                    <span className="tabular-nums text-[var(--pos-pink)]">{duracionDesde(s.inicio_tiempo, ahora)}</span>
+                    <span className="tabular-nums font-semibold text-[var(--pos-accent)]">{duracionDesde(s.inicio_tiempo, ahora)}</span>
                   </li>
                 ))}
               </ul>
@@ -361,8 +361,8 @@ export default function FacturacionScanner({
       </div>
 
       {mostrarBusqueda && (
-        <div className="absolute inset-0 z-10 flex items-start justify-center bg-black/85 px-4 pt-16" onClick={cerrarBusqueda}>
-          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-[520px] rounded-lg border border-[var(--pos-violet)] bg-[#0d0a16] p-4 shadow-[0_0_30px_rgba(168,85,247,0.4)]">
+        <div className="pos-overlay absolute inset-0 z-10 flex items-start justify-center px-4 pt-16" onClick={cerrarBusqueda}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-[520px] rounded-2xl border border-[var(--pos-border)] bg-[var(--pos-panel)] p-4 shadow-2xl">
             <p className="mb-2 text-sm text-[var(--pos-text-dim)]">
               {rubroBusqueda ? `${nombreRubro(rubroBusqueda)}: elija un producto` : 'Buscar producto por nombre'} (ESC para cerrar)
             </p>
@@ -387,7 +387,7 @@ export default function FacturacionScanner({
                 }
               }}
               placeholder="Escriba para filtrar, ej: coca..."
-              className="w-full rounded border border-[var(--pos-border)] bg-black px-3 py-2 text-white outline-none"
+              className="w-full rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-3 py-2"
             />
             <div className="mt-2 max-h-80 overflow-y-auto">
               {productosTodos === null ? (
@@ -401,7 +401,7 @@ export default function FacturacionScanner({
                     onClick={() => seleccionarProductoDeBusqueda(producto)}
                     onMouseEnter={() => setIndiceSeleccionado(i)}
                     className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm ${
-                      i === indiceSeleccionado ? 'bg-[var(--pos-violet)] text-white' : 'text-[var(--pos-text)]'
+                      i === indiceSeleccionado ? 'rounded-lg bg-[var(--pos-primary)] text-white' : 'text-[var(--pos-text)]'
                     }`}
                   >
                     <span>{producto.nombre}</span>

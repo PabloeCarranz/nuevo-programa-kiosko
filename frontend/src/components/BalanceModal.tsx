@@ -53,11 +53,11 @@ export default function BalanceModal({ onCerrar }: { onCerrar: () => void }) {
   const money = (n: number) => `$ ${n.toLocaleString('es-AR')}`
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/90">
+    <div className="fixed inset-0 z-40 flex items-center justify-center pos-overlay">
       <div className="max-h-[85vh] w-[760px] overflow-auto rounded-lg border border-[var(--pos-border)] bg-[var(--pos-panel)] p-4 text-[var(--pos-text)]">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[var(--pos-violet)]">📊 Balance de Ventas</h2>
-          <button onClick={onCerrar} className="text-[var(--pos-text-dim)] hover:text-white">✕</button>
+          <h2 className="text-lg font-bold text-[var(--pos-primary)]">📊 Balance de Ventas</h2>
+          <button onClick={onCerrar} className="text-[var(--pos-text-dim)] hover:text-[var(--pos-text)]">✕</button>
         </div>
 
         <div className="mb-2 flex flex-wrap items-end gap-2 text-sm">
@@ -66,27 +66,27 @@ export default function BalanceModal({ onCerrar }: { onCerrar: () => void }) {
           <button onClick={() => aplicarPeriodo('mes')} className="rounded border border-[var(--pos-border)] px-2 py-1">Ultimo mes</button>
           <div>
             <label className="block text-xs text-[var(--pos-text-dim)]">Desde</label>
-            <input type="date" value={desde} onChange={(e) => setDesde(e.target.value)} className="rounded border border-[var(--pos-border)] bg-black px-2 py-1" />
+            <input type="date" value={desde} onChange={(e) => setDesde(e.target.value)} className="rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1" />
           </div>
           <div>
             <label className="block text-xs text-[var(--pos-text-dim)]">Hasta</label>
-            <input type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} className="rounded border border-[var(--pos-border)] bg-black px-2 py-1" />
+            <input type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} className="rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1" />
           </div>
           <div>
             <label className="block text-xs text-[var(--pos-text-dim)]">Metodo</label>
-            <select value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} className="rounded border border-[var(--pos-border)] bg-black px-2 py-1">
+            <select value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)} className="rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1">
               <option>Todos</option>
               {opciones.metodos_pago.map((m) => <option key={m}>{m}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-xs text-[var(--pos-text-dim)]">Caja</label>
-            <select value={caja} onChange={(e) => setCaja(e.target.value)} className="rounded border border-[var(--pos-border)] bg-black px-2 py-1">
+            <select value={caja} onChange={(e) => setCaja(e.target.value)} className="rounded border border-[var(--pos-border)] bg-[var(--pos-input)] px-2 py-1">
               <option>Todas</option>
               {opciones.cajas.map((c) => <option key={c}>{c}</option>)}
             </select>
           </div>
-          <button onClick={aplicarFiltros} className="rounded bg-[var(--pos-green)] px-3 py-1.5 font-semibold text-black">💚 Aplicar filtros</button>
+          <button onClick={aplicarFiltros} className="rounded bg-[var(--pos-green)] px-3 py-1.5 font-semibold text-white">Aplicar filtros</button>
         </div>
 
         {resultado && (
@@ -98,7 +98,7 @@ export default function BalanceModal({ onCerrar }: { onCerrar: () => void }) {
                   <p className="font-bold">{money(total)}</p>
                 </div>
               ))}
-              <div className="rounded border border-[var(--pos-violet)] p-2">
+              <div className="rounded border border-[var(--pos-primary)] p-2">
                 <p className="text-[var(--pos-text-dim)]">TOTAL</p>
                 <p className="font-bold text-[var(--pos-green)]">{money(resultado.total_general)}</p>
               </div>
@@ -112,7 +112,7 @@ export default function BalanceModal({ onCerrar }: { onCerrar: () => void }) {
               </thead>
               <tbody>
                 {resultado.facturas.map((f) => (
-                  <tr key={f.id} onClick={() => verDetalle(f)} className="cursor-pointer border-t border-[var(--pos-border)]/40 hover:bg-white/5">
+                  <tr key={f.id} onClick={() => verDetalle(f)} className="cursor-pointer border-t border-[var(--pos-border)]/40 hover:bg-[var(--pos-primary-soft)]">
                     <td>{f.numero_factura}</td><td>{f.fecha}</td><td>{f.metodo_pago}</td><td>{f.caja}</td><td>{f.cliente}</td><td>{f.usuario}</td>
                     <td className="text-right">{money(f.total)}</td>
                   </tr>
@@ -123,9 +123,9 @@ export default function BalanceModal({ onCerrar }: { onCerrar: () => void }) {
         )}
 
         {seleccionada && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90" onClick={() => setSeleccionada(null)}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center pos-overlay" onClick={() => setSeleccionada(null)}>
             <div onClick={(e) => e.stopPropagation()} className="w-[420px] rounded-lg border border-[var(--pos-border)] bg-[var(--pos-panel)] p-4">
-              <h3 className="mb-2 font-bold text-[var(--pos-violet)]">{seleccionada.numero_factura}</h3>
+              <h3 className="mb-2 font-bold text-[var(--pos-primary)]">{seleccionada.numero_factura}</h3>
               <table className="w-full text-xs">
                 <tbody>
                   {lineas.map((l) => (
