@@ -17,6 +17,8 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   })
   if (!res.ok) {
     const body = await res.json().catch(() => ({ detail: res.statusText }))
+    // La prueba se vencio con el programa abierto: App vuelve a consultar la licencia.
+    if (res.status === 402) window.dispatchEvent(new Event('licencia-vencida'))
     throw new ApiError(body.detail ?? 'Error de red', res.status)
   }
   if (res.status === 204) return undefined as T

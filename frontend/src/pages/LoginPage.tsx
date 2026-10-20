@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { listarUsuarios } from '../api/auth'
 import Icon from '../components/Icon'
 import EditorNombre from '../components/EditorNombre'
+import AvisoPrueba from '../components/AvisoPrueba'
 import SelectorTema from '../components/SelectorTema'
 import { useAuthStore } from '../store/authStore'
 import { inicialDelNombre, useNegocioStore } from '../store/negocioStore'
@@ -61,7 +62,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(ellipse_at_top,var(--pos-glow),transparent_60%)] p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[radial-gradient(ellipse_at_top,var(--pos-glow),transparent_60%)] gap-4 p-4">
       <div className="absolute top-3 right-3">
         <SelectorTema />
       </div>
@@ -119,6 +120,7 @@ export default function LoginPage() {
           {enviando ? 'Ingresando...' : 'Ingresar'}
         </button>
       </form>
+      <AvisoPrueba />
     </div>
   )
 }

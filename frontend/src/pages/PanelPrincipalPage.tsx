@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AnulacionFacturasModal from '../components/AnulacionFacturasModal'
+import AvisoPrueba from '../components/AvisoPrueba'
 import BalanceModal from '../components/BalanceModal'
 import CierreCajaModal from '../components/CierreCajaModal'
 import ClienteWindow from '../components/ClienteWindow'
@@ -200,6 +201,9 @@ export default function PanelPrincipalPage() {
         </div>
 
         <div className="flex items-center gap-0.5">
+          <span className="mr-2">
+            <AvisoPrueba />
+          </span>
           <span className="mr-2 hidden items-center gap-2 rounded-full bg-[var(--pos-panel-2)] py-0.5 pr-3 pl-0.5 text-sm ring-1 ring-[var(--pos-border)] md:flex">
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--pos-primary-soft)] text-[0.6875rem] font-bold text-[var(--pos-primary)]">
               {usuario?.usuario.charAt(0).toUpperCase()}

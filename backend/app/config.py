@@ -1,3 +1,5 @@
+import os
+import sys
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -12,6 +14,9 @@ class Settings(BaseSettings):
     session_secret: str
     receipts_dir: str = "../datos/comprobantes"
     cierres_dir: str = "../datos/cierres"
+    # Segunda copia de la fecha de inicio de la prueba y del codigo de activacion,
+    # fuera de la carpeta de datos. Vacio = ProgramData\CajaNeon (Windows).
+    licencia_dir: str = ""
 
     smtp_host: str = "smtp.gmail.com"
     smtp_port: int = 587
@@ -45,6 +50,17 @@ class Settings(BaseSettings):
         if not path.is_absolute():
             path = (BASE_DIR / path).resolve()
         return path
+
+    @property
+    def licencia_dir_resolved(self) -> Path:
+        if self.licencia_dir:
+            path = Path(self.licencia_dir)
+            return path if path.is_absolute() else (BASE_DIR / path).resolve()
+        if sys.platform == "win32":
+            base = Path(os.environ.get("PROGRAMDATA") or Path.home())
+        else:
+            base = Path.home() / ".local" / "share"
+        return base / "CajaNeon"
 
 
 settings = Settings()

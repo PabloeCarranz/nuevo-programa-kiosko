@@ -23,11 +23,40 @@ y Caja3, todos con contraseña `1234`.
 ## Para usarlo
 
 ```
-cd backend   →  .venv\Scripts\python -m uvicorn app.main:app --port 8100 --reload
+cd backend   →  .venv\Scripts\python -m uvicorn app.main:app --port 8100 --reload --reload-dir app
 cd frontend  →  npm run dev
 ```
 
 Abrir http://localhost:5180 (o la IP de la PC desde otro equipo de la red).
+
+## Licencia: prueba de 7 días y código para siempre
+
+El programa arranca con 7 días de prueba gratis (el contador empieza con el primer
+inicio). Al terminar, la API se bloquea y el programa muestra la pantalla
+"Terminó tu prueba gratuita" con el **ID de la PC** y un campo para pegar el código.
+Los datos del cliente se conservan y vuelven al activar. Con un código válido el
+programa queda activado para siempre **en esa PC**.
+
+Para vender (hacerlo en tu PC, nunca en la del cliente):
+
+```
+cd backend
+.venv\Scripts\python scripts\generar_claves_licencia.py     (una sola vez, ya hecho en esta PC)
+.venv\Scripts\python scripts\emitir_codigo.py ID-DE-LA-PC --cliente "Bar Don Pepe"
+```
+
+- El cliente te pasa el ID que ve en pantalla (ej. `4022-C75E-A697`); el script imprime
+  el código para pegarle. Cada emisión queda anotada en `%USERPROFILE%\.caja-licencias\emitidos.csv`.
+- La **clave privada** vive en `%USERPROFILE%\.caja-licencias\clave_privada.pem`, fuera del
+  proyecto. Hacé copia en un lugar seguro y no la entregues con el programa. Si se pierde no
+  se pueden emitir más códigos; si se filtra, cualquiera los puede fabricar. No regeneres las
+  claves: invalidaría todos los códigos ya entregados.
+- Un código solo sirve para la PC cuyo ID se usó. Si el cliente cambia de PC hay que emitirle otro.
+- Esta PC (la de desarrollo) también tiene su prueba de 7 días: activala igual, con
+  `emitir_codigo.py` y el ID que muestra el aviso "Prueba gratuita" del programa.
+- Límites: la fecha de inicio se guarda en la base y en `%PROGRAMDATA%\CajaNeon\licencia.json`
+  (rige la más antigua) y atrasar el reloj no devuelve días. Aun así, quien entregue el programa
+  como código fuente no puede impedir que alguien con conocimientos quite la verificación.
 
 ## Qué cambió respecto del sistema del bar
 
